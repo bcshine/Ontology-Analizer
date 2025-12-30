@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>중간계 온톨로지 관계망 분석기 v1.0</title>
+    <style>
+        /* 전체 페이지 스타일 설정 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* body 스타일: 다크 그라데이션 배경 */
+        body {
+            background: linear-gradient(135deg, #0a1628 0%, #1a3a52 50%, #0a1628 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* 메인 컨테이너: 전체 화면 중앙 정렬 */
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+        }
+
+        /* 로고 섹션 */
+        .logo-section {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            animation: fadeInUp 1s ease-out;
+            padding: 20px;
+        }
+
+        /* 나침반 로고 컨테이너 */
+        .compass-logo {
+            position: relative;
+            width: 380px;
+            height: 380px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            filter: drop-shadow(0 10px 40px rgba(255, 255, 255, 0.2));
+        }
+
+        /* SVG 나침반 스타일 */
+        .compass-svg {
+            width: 100%;
+            height: 100%;
+            animation: compassFloat 6s ease-in-out infinite;
+        }
+
+        @keyframes compassFloat {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-10px) rotate(2deg);
+            }
+        }
+
+        /* 나침반 외부 링 회전 */
+        .compass-outer-ring {
+            animation: slowRotate 60s linear infinite;
+            transform-origin: center;
+        }
+
+        @keyframes slowRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* 나침반 바늘 */
+        .compass-needle {
+            animation: needleRotate 8s ease-in-out infinite;
+            transform-origin: center;
+        }
+
+        @keyframes needleRotate {
+            0%, 100% { transform: rotate(-2deg); }
+            50% { transform: rotate(2deg); }
+        }
+
+        /* 타이틀 텍스트 */
+        .title-text {
+            font-size: 46px;
+            font-weight: 700;
+            color: white;
+            text-align: center;
+            text-shadow: 0 0 20px rgba(0, 200, 255, 0.6),
+                         0 0 40px rgba(0, 200, 255, 0.3),
+                         0 2px 10px rgba(0, 0, 0, 0.5);
+            letter-spacing: 2px;
+            line-height: 1.5;
+        }
+        
+        /* 버전 스타일 */
+        .version {
+            font-size: 46px;
+            color: white;
+            font-weight: 700;
+            text-shadow: 0 0 20px rgba(0, 200, 255, 0.6),
+                         0 0 40px rgba(0, 200, 255, 0.3),
+                         0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* 서브타이틀 */
+        .subtitle-text {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            letter-spacing: 3px;
+            margin-top: -10px;
+        }
+
+        /* 버튼 섹션 */
+        .button-section {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 0;
+            animation: fadeInUp 1.2s ease-out;
+        }
+
+        /* 분석하기 버튼 스타일 */
+        .analyze-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #00d4ff 0%, #0099ff 50%, #0066ff 100%);
+            color: white;
+            text-decoration: none;
+            padding: 20px 50px;
+            border-radius: 50px;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 30px rgba(0, 153, 255, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 버튼 호버 효과 */
+        .analyze-button:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 50px rgba(0, 200, 255, 0.8);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* 버튼 클릭 효과 */
+        .analyze-button:active {
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        /* 버튼 내부 반짝임 효과 */
+        .analyze-button::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: rotate(45deg);
+            animation: shimmer 3s infinite;
+        }
+
+        /* 버튼 텍스트 */
+        .button-text {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 버튼 아이콘 */
+        .button-icon {
+            position: relative;
+            z-index: 1;
+            font-size: 24px;
+            transition: transform 0.3s ease;
+        }
+
+        .analyze-button:hover .button-icon {
+            transform: translateX(5px);
+        }
+
+        /* 애니메이션: 페이드인 업 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 애니메이션: 반짝임 효과 */
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
+        }
+
+        /* 반짝이는 별 효과 */
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            animation: sparkle 2s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes sparkle {
+            0%, 100% {
+                opacity: 0;
+                transform: scale(0);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* 반응형 디자인: 태블릿 */
+        @media (max-width: 768px) {
+            .compass-logo {
+                width: 320px;
+                height: 320px;
+            }
+
+            .title-text {
+                font-size: 38px;
+            }
+            
+            .version {
+                font-size: 38px;
+            }
+
+            .subtitle-text {
+                font-size: 15px;
+            }
+
+            .analyze-button {
+                padding: 18px 40px;
+                font-size: 18px;
+            }
+
+            .container {
+                gap: 30px;
+            }
+        }
+
+        /* 반응형 디자인: 모바일 */
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+
+            .compass-logo {
+                width: 280px;
+                height: 280px;
+            }
+
+            .title-text {
+                font-size: 30px;
+            }
+            
+            .version {
+                font-size: 30px;
+                display: inline;
+            }
+
+            .subtitle-text {
+                font-size: 13px;
+                letter-spacing: 1.5px;
+            }
+
+            .logo-section {
+                gap: 20px;
+                padding: 20px 10px;
+            }
+
+            .analyze-button {
+                padding: 16px 35px;
+                font-size: 16px;
+                width: 90%;
+                max-width: 300px;
+            }
+
+            .button-icon {
+                font-size: 20px;
+            }
+
+            .container {
+                gap: 25px;
+            }
+        }
+
+        /* 아주 작은 모바일 화면 */
+        @media (max-width: 360px) {
+            .compass-logo {
+                width: 240px;
+                height: 240px;
+            }
+
+            .title-text {
+                font-size: 26px;
+            }
+            
+            .version {
+                font-size: 26px;
+            }
+
+            .subtitle-text {
+                font-size: 11px;
+            }
+
+            .analyze-button {
+                padding: 14px 30px;
+                font-size: 15px;
+            }
+        }
+
+        /* 큰 화면 최적화 */
+        @media (min-width: 1400px) {
+            .compass-logo {
+                width: 450px;
+                height: 450px;
+            }
+
+            .title-text {
+                font-size: 54px;
+            }
+            
+            .version {
+                font-size: 54px;
+            }
+
+            .subtitle-text {
+                font-size: 20px;
+            }
+
+            .analyze-button {
+                padding: 22px 60px;
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 메인 컨테이너 -->
+    <div class="container">
+        <!-- 로고 섹션 -->
+        <div class="logo-section">
+            <!-- 나침반 로고 -->
+            <div class="compass-logo">
+                <svg class="compass-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <!-- 그라데이션 정의 -->
+                        <radialGradient id="outerRingGrad" cx="50%" cy="50%">
+                            <stop offset="0%" style="stop-color:#5a6b6a;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#3d4a49;stop-opacity:1" />
+                        </radialGradient>
+                        <linearGradient id="whiteGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#f0f0f0;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#d0d0d0;stop-opacity:1" />
+                        </linearGradient>
+                        <radialGradient id="centerGrad" cx="30%" cy="30%">
+                            <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#e8e8e8;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#c0c0c0;stop-opacity:1" />
+                        </radialGradient>
+                        <linearGradient id="northNeedle" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#c92a2a;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="southNeedle" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#b0b0b0;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#707070;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    
+                    <!-- 장식 상단 -->
+                    <g transform="translate(200, 35)">
+                        <path d="M 0,-25 L -8,-10 L -3,0 L 0,5 L 3,0 L 8,-10 Z" 
+                              fill="url(#whiteGrad)" stroke="#d0d0d0" stroke-width="1"/>
+                        <circle cx="-10" cy="-5" r="3" fill="url(#whiteGrad)"/>
+                        <circle cx="10" cy="-5" r="3" fill="url(#whiteGrad)"/>
+                        <circle cx="0" cy="-15" r="2" fill="#f0f0f0"/>
+                    </g>
+                    
+                    <!-- 외부 링 (회전) -->
+                    <g class="compass-outer-ring">
+                        <circle cx="200" cy="200" r="170" fill="none" 
+                                stroke="url(#outerRingGrad)" stroke-width="8"/>
+                        <circle cx="200" cy="200" r="165" fill="none" 
+                                stroke="#8b9d83" stroke-width="2"/>
+                        <circle cx="200" cy="200" r="175" fill="none" 
+                                stroke="#8b9d83" stroke-width="2"/>
+                        
+                        <!-- 외부 장식 점들 -->
+                        <circle cx="200" cy="25" r="8" fill="#e0e0e0"/>
+                        <circle cx="375" cy="200" r="8" fill="#e0e0e0"/>
+                        <circle cx="200" cy="375" r="8" fill="#e0e0e0"/>
+                        <circle cx="25" cy="200" r="8" fill="#e0e0e0"/>
+                        
+                        <circle cx="263" cy="63" r="6" fill="#9ba8a7"/>
+                        <circle cx="337" cy="137" r="6" fill="#9ba8a7"/>
+                        <circle cx="337" cy="263" r="6" fill="#9ba8a7"/>
+                        <circle cx="263" cy="337" r="6" fill="#9ba8a7"/>
+                        <circle cx="137" cy="337" r="6" fill="#9ba8a7"/>
+                        <circle cx="63" cy="263" r="6" fill="#9ba8a7"/>
+                        <circle cx="63" cy="137" r="6" fill="#9ba8a7"/>
+                        <circle cx="137" cy="63" r="6" fill="#9ba8a7"/>
+                    </g>
+                    
+                    <!-- 내부 원 배경 -->
+                    <circle cx="200" cy="200" r="140" fill="#f5f5dc" opacity="0.9"/>
+                    <circle cx="200" cy="200" r="140" fill="none" 
+                            stroke="url(#whiteGrad)" stroke-width="3"/>
+                    
+                    <!-- 나침반 바늘 (회전 애니메이션) -->
+                    <g class="compass-needle">
+                        <!-- 주요 방향 표시 (북) -->
+                        <polygon points="200,70 195,160 200,155 205,160" 
+                                 fill="url(#northNeedle)" stroke="#8b0000" stroke-width="1"/>
+                        
+                        <!-- 주요 방향 표시 (남) -->
+                        <polygon points="200,330 195,240 200,245 205,240" 
+                                 fill="url(#southNeedle)" stroke="#4a4a4a" stroke-width="1"/>
+                        
+                        <!-- 동서 방향 -->
+                        <polygon points="330,200 240,195 245,200 240,205" 
+                                 fill="url(#whiteGrad)" stroke="#c0c0c0" stroke-width="1"/>
+                        <polygon points="70,200 160,195 155,200 160,205" 
+                                 fill="url(#whiteGrad)" stroke="#c0c0c0" stroke-width="1"/>
+                        
+                        <!-- 보조 방향선 -->
+                        <line x1="200" y1="90" x2="200" y2="310" 
+                              stroke="#b0b0b0" stroke-width="2" opacity="0.5"/>
+                        <line x1="90" y1="200" x2="310" y2="200" 
+                              stroke="#b0b0b0" stroke-width="2" opacity="0.5"/>
+                        
+                        <!-- 대각선 방향 -->
+                        <line x1="140" y1="140" x2="260" y2="260" 
+                              stroke="#c0c0c0" stroke-width="1.5" opacity="0.4"/>
+                        <line x1="260" y1="140" x2="140" y2="260" 
+                              stroke="#c0c0c0" stroke-width="1.5" opacity="0.4"/>
+                        
+                        <!-- 장식 별 포인트 -->
+                        <g transform="translate(200, 85)">
+                            <polygon points="0,-8 -2,-2 -8,0 -2,2 0,8 2,2 8,0 2,-2" 
+                                     fill="#f0f0f0" stroke="#d0d0d0" stroke-width="0.5"/>
+                        </g>
+                        <g transform="translate(200, 315)">
+                            <polygon points="0,-6 -1.5,-1.5 -6,0 -1.5,1.5 0,6 1.5,1.5 6,0 1.5,-1.5" 
+                                     fill="#d0d0d0" stroke="#a0a0a0" stroke-width="0.5"/>
+                        </g>
+                    </g>
+                    
+                    <!-- 중앙 원 -->
+                    <circle cx="200" cy="200" r="35" fill="url(#centerGrad)" 
+                            stroke="url(#whiteGrad)" stroke-width="3"/>
+                    <circle cx="200" cy="200" r="30" fill="none" 
+                            stroke="#d0d0d0" stroke-width="1" opacity="0.6"/>
+                    <circle cx="200" cy="200" r="20" fill="none" 
+                            stroke="#b0b0b0" stroke-width="1" opacity="0.4"/>
+                    
+                    <!-- 중앙 장식 -->
+                    <circle cx="200" cy="200" r="8" fill="#d0d0d0"/>
+                    <circle cx="200" cy="200" r="5" fill="#f0f0f0"/>
+                    <circle cx="200" cy="200" r="2" fill="#ffffff"/>
+                    
+                    <!-- 장식 하단 -->
+                    <g transform="translate(200, 365)">
+                        <path d="M 0,25 L -8,10 L -3,0 L 0,-5 L 3,0 L 8,10 Z" 
+                              fill="url(#whiteGrad)" stroke="#d0d0d0" stroke-width="1"/>
+                        <circle cx="-10" cy="5" r="3" fill="url(#whiteGrad)"/>
+                        <circle cx="10" cy="5" r="3" fill="url(#whiteGrad)"/>
+                    </g>
+                </svg>
+            </div>
+            
+            <!-- 타이틀 -->
+            <div class="title-text">
+                중간계 온톨로지<br>관계망 분석기 v1.0
+            </div>
+            <div class="subtitle-text">
+                Midworld Ontology Relationship Analyzer
+            </div>
+        </div>
+        
+        <!-- 버튼 섹션 (아래쪽 배치) -->
+        <div class="button-section">
+            <a href="https://gemini.google.com/gem/19HfS9y9uRSv4fIdg4XhQz4nRGe1iHz9B?usp=sharing" 
+               class="analyze-button" 
+               target="_blank" 
+               rel="noopener noreferrer">
+                <span class="button-text">분석하기</span>
+                <span class="button-icon">→</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- 반짝이는 별 효과 생성 스크립트 -->
+    <script>
+        // 랜덤한 위치에 반짝이는 별 생성
+        function createSparkles() {
+            const sparkleCount = 20;
+            for (let i = 0; i < sparkleCount; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.left = Math.random() * 100 + '%';
+                sparkle.style.top = Math.random() * 100 + '%';
+                sparkle.style.animationDelay = Math.random() * 2 + 's';
+                sparkle.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                document.body.appendChild(sparkle);
+            }
+        }
+
+        // 페이지 로드 시 별 효과 생성
+        window.addEventListener('load', createSparkles);
+    </script>
+</body>
+</html>
+
